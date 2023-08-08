@@ -177,10 +177,9 @@ namespace Carbon.Plugins
                             isPlayerPve = true;
 
                     if (isPlayerPve)
-                        continue;
-                    
-                    pvpPlayerList.Add(p);
-                    isPlayerPve = false;
+                        isPlayerPve = false;
+                    else
+                        pvpPlayerList.Add(p);
                 }
 
                 string pvpList = string.Join(", ",
