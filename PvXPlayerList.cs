@@ -189,14 +189,13 @@ namespace Carbon.Plugins
                 pvePlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
                 pvpPlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
 
+                string pveList = string.Join(", ",
+                    pvpPlayerList.Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]"))
+                        .ToArray());
+
                 string pvpList = string.Join(", ",
                     pvpPlayerList.Select(p => covalence.FormatText($"[#{_pvpColor}]{p.Name.Sanitize()}[/#]"))
                         .ToArray());
-
-                string pveList = string.Join(", ",
-                    covalence.Players.Connected
-                        .Where(p => !p.IsAdmin && !p.HasPermission(PERM_HIDE) && !pvpPlayerList.Contains(p))
-                        .Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]")).ToArray());
 
                 string playerList;
                 if (!string.IsNullOrEmpty(pveList) && !string.IsNullOrEmpty(pvpList))
