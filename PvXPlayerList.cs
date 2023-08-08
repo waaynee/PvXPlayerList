@@ -166,6 +166,7 @@ namespace Carbon.Plugins
                         .Select(p => covalence.FormatText($"[#{_adminColor}]{p.Name.Sanitize()}[/#]")).ToArray());
 
                 bool isPlayerPve = false;
+                List<IPlayer> pvePlayerList = new List<IPlayer>();
                 List<IPlayer> pvpPlayerList = new List<IPlayer>();
                 foreach (IPlayer p in covalence.Players.Connected)
                 {
@@ -177,10 +178,16 @@ namespace Carbon.Plugins
                             isPlayerPve = true;
 
                     if (isPlayerPve)
+                    {
+                        pvePlayerList.Add(p);
                         isPlayerPve = false;
+                    }
                     else
                         pvpPlayerList.Add(p);
                 }
+                
+                pvePlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+                pvpPlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
 
                 string pvpList = string.Join(", ",
                     pvpPlayerList.Select(p => covalence.FormatText($"[#{_pvpColor}]{p.Name.Sanitize()}[/#]"))
