@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Oxide.Core;
@@ -176,8 +176,11 @@ namespace Carbon.Plugins
                         if (p.BelongsToGroup(pveGroup))
                             isPlayerPve = true;
 
-                    if(!isPlayerPve)
-                        pvpPlayerList.Add(p);
+                    if (isPlayerPve)
+                        continue;
+                    
+                    pvpPlayerList.Add(p);
+                    isPlayerPve = false;
                 }
 
                 string pvpList = string.Join(", ",
@@ -188,11 +191,6 @@ namespace Carbon.Plugins
                     covalence.Players.Connected
                         .Where(p => !p.IsAdmin && !p.HasPermission(PERM_HIDE) && !pvpPlayerList.Contains(p))
                         .Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]")).ToArray());
-
-                Puts("pvpList: ");
-                Puts(pvpList);
-                Puts("pveList: ");
-                Puts(pveList);
 
                 string playerList;
                 if (!string.IsNullOrEmpty(pveList) && !string.IsNullOrEmpty(pvpList))
