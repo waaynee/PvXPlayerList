@@ -1,9 +1,17 @@
+// ReSharper disable RedundantUsingDirective
 using System;
 using System.Collections.Generic;
 using System.Linq;
+// ReSharper restore RedundantUsingDirective
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 
+/*
+ * TODO:
+ * - seperate/mix option for pvx lists
+ */
+
+// ReSharper disable once CheckNamespace
 namespace Carbon.Plugins
 {
     [Info("PvXPlayerList", "waayne", "1.0")]
@@ -154,68 +162,70 @@ namespace Carbon.Plugins
             if (totalCount <= 0)
             {
                 player.Reply(Lang("NobodyOnline", player.Id));
+                return;
             }
-            else if (totalCount == 1 && player.Id != "server_console")
+            if (totalCount == 1 && player.Id != "server_console")
             {
                 player.Reply(Lang("OnlyYou", player.Id));
+                return;
             }
+
+            string adminList = string.Join(", ",
+                covalence.Players.Connected.Where(p => p.IsAdmin && !p.HasPermission(PERM_HIDE))
+                    .Select(p => covalence.FormatText($"[#{_adminColor}]{p.Name.Sanitize()}[/#]")).ToArray());
+
+            bool isPlayerPve = false;
+            List<IPlayer> pvePlayerList = new();
+            List<IPlayer> pvpPlayerList = new();
+            foreach (IPlayer p in covalence.Players.Connected)
+            {
+                if (p.IsAdmin || p.HasPermission(PERM_HIDE))
+                    continue;
+
+                foreach (string pveGroup in _pveGroups)
+                    if (p.BelongsToGroup(pveGroup))
+                        isPlayerPve = true;
+
+                if (isPlayerPve)
+                {
+                    pvePlayerList.Add(p);
+                    isPlayerPve = false;
+                }
+                else
+                {
+                    pvpPlayerList.Add(p);
+                }
+            }
+                
+            pvePlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+            pvpPlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
+
+            string pveList = string.Join(", ",
+                pvePlayerList.Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]"))
+                    .ToArray());
+
+            string pvpList = string.Join(", ",
+                pvpPlayerList.Select(p => covalence.FormatText($"[#{_pvpColor}]{p.Name.Sanitize()}[/#]"))
+                    .ToArray());
+
+            string playerList;
+            if (!string.IsNullOrEmpty(pveList) && !string.IsNullOrEmpty(pvpList))
+                playerList = string.Concat(pveList, ", ", pvpList);
+            else if (!string.IsNullOrEmpty(pveList) && string.IsNullOrEmpty(pvpList))
+                playerList = pveList;
+            else
+                playerList = pvpList;
+
+            if (_adminSeparate && !string.IsNullOrEmpty(adminList))
+                player.Reply(Lang("AdminList", player.Id, adminCount, adminList.TrimEnd(' ').TrimEnd(',')));
             else
             {
-                string adminList = string.Join(", ",
-                    covalence.Players.Connected.Where(p => p.IsAdmin && !p.HasPermission(PERM_HIDE))
-                        .Select(p => covalence.FormatText($"[#{_adminColor}]{p.Name.Sanitize()}[/#]")).ToArray());
-
-                bool isPlayerPve = false;
-                List<IPlayer> pvePlayerList = new List<IPlayer>();
-                List<IPlayer> pvpPlayerList = new List<IPlayer>();
-                foreach (IPlayer p in covalence.Players.Connected)
-                {
-                    if (p.IsAdmin || p.HasPermission(PERM_HIDE))
-                        continue;
-
-                    foreach (string pveGroup in _pveGroups)
-                        if (p.BelongsToGroup(pveGroup))
-                            isPlayerPve = true;
-
-                    if (isPlayerPve)
-                    {
-                        pvePlayerList.Add(p);
-                        isPlayerPve = false;
-                    }
-                    else
-                        pvpPlayerList.Add(p);
-                }
-                
-                pvePlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
-                pvpPlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
-
-                string pveList = string.Join(", ",
-                    pvePlayerList.Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]"))
-                        .ToArray());
-
-                string pvpList = string.Join(", ",
-                    pvpPlayerList.Select(p => covalence.FormatText($"[#{_pvpColor}]{p.Name.Sanitize()}[/#]"))
-                        .ToArray());
-
-                string playerList;
-                if (!string.IsNullOrEmpty(pveList) && !string.IsNullOrEmpty(pvpList))
-                    playerList = string.Concat(pveList, ", ", pvpList);
-                else if (!string.IsNullOrEmpty(pveList) && string.IsNullOrEmpty(pvpList))
-                    playerList = pveList;
-                else
-                    playerList = pvpList;
-
-                if (_adminSeparate && !string.IsNullOrEmpty(adminList))
-                    player.Reply(Lang("AdminList", player.Id, adminCount, adminList.TrimEnd(' ').TrimEnd(',')));
-                else
-                {
-                    playerCount = adminCount + playerCount;
-                    playerList = string.Concat(adminList, ", ", playerList);
-                }
-
-                if (!string.IsNullOrEmpty(playerList))
-                    player.Reply(Lang("PlayerList", player.Id, playerCount, playerList.TrimEnd(' ').TrimEnd(',')));
+                playerCount = adminCount + playerCount;
+                playerList = string.Concat(adminList, ", ", playerList);
             }
+
+            if (!string.IsNullOrEmpty(playerList))
+                player.Reply(Lang("PlayerList", player.Id, playerCount, playerList.TrimEnd(' ').TrimEnd(',')));
         }
 
         #endregion
