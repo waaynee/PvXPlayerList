@@ -24,10 +24,10 @@ namespace Carbon.Plugins
         private const string PERM_HIDE = "pvxplayerlist.hide";
 
         private bool _adminSeparate;
-        private string _adminColor;
-        private string _pveColor;
-        private string _pvpColor;
-        private string _pveGroupsStr;
+        private string? _adminColor;
+        private string? _pveColor;
+        private string? _pvpColor;
+        private string? _pveGroupsStr;
         private string[] _pveGroups = { };
 
         protected override void LoadDefaultConfig()
@@ -235,7 +235,7 @@ namespace Carbon.Plugins
         private T GetConfig<T>(string name, T value) =>
             Config[name] == null ? value : (T) Convert.ChangeType(Config[name], typeof(T));
 
-        private string Lang(string key, string id = null, params object[] args) =>
+        private string Lang(string key, string? id = null, params object[] args) =>
             string.Format(lang.GetMessage(key, this, id), args);
 
         #endregion
