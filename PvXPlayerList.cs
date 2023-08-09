@@ -190,7 +190,7 @@ namespace Carbon.Plugins
                 pvpPlayerList.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
 
                 string pveList = string.Join(", ",
-                    pvpPlayerList.Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]"))
+                    pvePlayerList.Select(p => covalence.FormatText($"[#{_pveColor}]{p.Name.Sanitize()}[/#]"))
                         .ToArray());
 
                 string pvpList = string.Join(", ",
