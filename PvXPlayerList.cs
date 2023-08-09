@@ -3,8 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Epic.OnlineServices.Presence;
-using Harmony;
 using Oxide.Core;
 using Oxide.Core.Libraries.Covalence;
 
